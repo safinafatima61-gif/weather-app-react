@@ -1,9 +1,15 @@
 import { useState } from "react";
+
 import SearchBar from "./components/SearchBar";
 import WeatherCard from "./components/WeatherCard";
 import WeatherDetails from "./components/WeatherDetails";
 import Forecast from "./components/Forecast";
-import { getWeather } from "./services/weatherApi";
+
+import {
+  getWeather,
+  getWeatherByLocation,
+} from "./services/weatherApi";
+
 import "./App.css";
 
 function App() {
@@ -11,12 +17,14 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Search weather by city
   const handleSearch = async (city) => {
     setLoading(true);
     setError("");
 
     try {
       const data = await getWeather(city);
+
       setWeather(data);
     } catch (err) {
       setWeather(null);
@@ -26,6 +34,7 @@ function App() {
     }
   };
 
+  // Weather using user's location
   const handleLocation = () => {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by your browser.");
@@ -40,32 +49,24 @@ function App() {
         try {
           const { latitude, longitude } = position.coords;
 
-          const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=auto`
+          const data = await getWeatherByLocation(
+            latitude,
+            longitude
           );
 
-          if (!response.ok) {
-            throw new Error("Unable to get your location weather.");
-          }
-
-          const data = await response.json();
-
-          setWeather({
-            location: {
-              name: "Your Location",
-              country: "",
-            },
-            current: data.current,
-            daily: data.daily,
-          });
+          setWeather(data);
         } catch (err) {
+          setWeather(null);
           setError(err.message);
         } finally {
           setLoading(false);
         }
       },
       () => {
-        setError("Location permission was denied. Please allow location access.");
+        setError(
+          "Location permission was denied. Please allow location access."
+        );
+
         setLoading(false);
       }
     );
@@ -102,12 +103,19 @@ function App() {
           loading={loading}
         />
 
-        {error && <div className="error">{error}</div>}
+        {error && (
+          <div className="error">
+            {error}
+          </div>
+        )}
 
         {loading && (
           <div className="loading">
             <div className="spinner"></div>
-            <p>Getting weather information...</p>
+
+            <p>
+              Getting weather information...
+            </p>
           </div>
         )}
 
@@ -123,9 +131,13 @@ function App() {
 
         {!loading && !weather && !error && (
           <div className="welcome">
-            <div className="welcome-icon">🌤️</div>
+            <div className="welcome-icon">
+              🌤️
+            </div>
 
-            <h2>Check the Weather</h2>
+            <h2>
+              Check the Weather
+            </h2>
 
             <p>
               Enter a city name or use your location to get weather information.
@@ -134,8 +146,13 @@ function App() {
         )}
 
         <footer>
-          <p>Weather data provided by Open-Meteo</p>
-          <p className="footer-note">Frontend React.js Weather Application</p>
+          <p>
+            Weather data provided by Open-Meteo
+          </p>
+
+          <p className="footer-note">
+            React.js + Node.js + Express.js Weather Application
+          </p>
         </footer>
 
       </div>
