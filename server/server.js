@@ -122,7 +122,8 @@ app.get("/api/weather/location", async (req, res) => {
     });
   }
 });
-
-app.listen(PORT, () => {
-  console.log(`Weather backend running on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Weather backend running on port ${PORT}`);
 });
+
+
